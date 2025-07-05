@@ -1,0 +1,8 @@
+[package]
+name = "process-manager"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = "0.31.1"
+sysinfo = "0.35.2"
