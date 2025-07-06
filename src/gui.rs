@@ -146,7 +146,7 @@ pub fn run() -> Result<(), eframe::Error> {
     };
 
     run_native(
-        "Process Manager",
+        "ProcMan-rs",
         native_options,
         Box::new(
             |cc| {
