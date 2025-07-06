@@ -1,6 +1,6 @@
 
 use eframe::emath::Numeric;
-use sysinfo::{System, Pid,};
+use sysinfo::{ System, Pid };
 
 pub struct ProcessInfo {
     pub pid: u32,
@@ -12,6 +12,7 @@ pub struct ProcessInfo {
 pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<ProcessInfo> {
     sys.refresh_all();
     
+    // Filters and stores values cpu and memory usage in percent and two decimals
     let mut processes: Vec<ProcessInfo> = sys.processes()
         .iter()
         .filter_map(
@@ -29,6 +30,7 @@ pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<Proc
             )
         .collect();
     
+    // Sorting for either most cpu or memory usage
     processes.sort_by(|a, b| 
         if sort == "CPU" {
             b.cpu_usage.partial_cmp(&a.cpu_usage).unwrap()

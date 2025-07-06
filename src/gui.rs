@@ -25,6 +25,7 @@ impl eframe::App for ProcessManagerApp {
             self.processes = process_util::get_processes(&mut self.sys, self.sort.clone(), self.filter.clone());
         }
 
+        // Actions
         egui::TopBottomPanel::top("top_panel")
             .show(ctx, |ui| {
             let layout = if ui.available_width() >= 630.0 { 
@@ -79,6 +80,7 @@ impl eframe::App for ProcessManagerApp {
             });
         });
 
+        // Processes
         egui::CentralPanel::default()
             .show(ctx, |ui| {
             egui::ScrollArea::vertical()
@@ -101,7 +103,7 @@ impl eframe::App for ProcessManagerApp {
                             ui.horizontal(|ui| {
                                 ui.label(process_info.name.clone());
 
-                                ui.add_space(ui.available_width()-175.0);
+                                ui.add_space(ui.available_width()-200.0);
                                 ui.label(format!("CPU: {}%", process_info.cpu_usage));
 
                                 ui.add_space(ui.available_width()-100.0);
@@ -137,8 +139,8 @@ fn load_icon() -> egui::IconData {
 pub fn run() -> Result<(), eframe::Error> {
     let native_options = NativeOptions {
         viewport: egui::ViewportBuilder:: default()
-            .with_inner_size([500.0, 350.0])
-            .with_min_inner_size([350.0, 200.0])
+            .with_inner_size([500.0, 300.0])
+            .with_min_inner_size([500.0, 300.0])
             .with_icon(load_icon()),
         ..Default::default()
     };
