@@ -12,8 +12,9 @@ pub struct ProcessInfo {
 pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<ProcessInfo> {
     sys.refresh_all();
 
-    let processes = sys.processes();
+    let cpus = sys.cpus().len() as f32;
 
+    let processes = sys.processes();
     let mut parent_processes: Vec<ProcessInfo> = Vec::<ProcessInfo>::new();
 
     for (pid, process) in processes.iter() {
@@ -30,7 +31,7 @@ pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<Proc
         if name_match_index.is_none() {
             parent_processes.push(ProcessInfo {
                 pid, name, 
-                cpu_usage: ((process.cpu_usage()*100.0).round())/100.0,
+                cpu_usage: ((process.cpu_usage()/cpus)*100.0).round()/100.0,
                 memory_usage: (((process.memory().to_f64()/sys.total_memory().to_f64())*10000.0).round())/100.0
             });
             continue;
@@ -41,7 +42,7 @@ pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<Proc
             parent_processes.remove(name_match_index);
             parent_processes.push(ProcessInfo {
                 pid, name,
-                cpu_usage: ((process.cpu_usage()*100.0).round())/100.0,
+                cpu_usage: ((process.cpu_usage()/cpus)*100.0).round()/100.0,
                 memory_usage: (((process.memory().to_f64()/sys.total_memory().to_f64())*10000.0).round())/100.0
             });
         }
