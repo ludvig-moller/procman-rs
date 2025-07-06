@@ -1,4 +1,6 @@
 
+use std::io::Empty;
+
 use eframe::emath::Numeric;
 use sysinfo::{ System, Pid };
 
@@ -11,27 +13,44 @@ pub struct ProcessInfo {
 
 pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<ProcessInfo> {
     sys.refresh_all();
-    
-    // Filters and stores values cpu and memory usage in percent and two decimals
-    let mut processes: Vec<ProcessInfo> = sys.processes()
-        .iter()
-        .filter_map(
-            |(pid, process)|
-                if pid.as_u32() != 0 && process.name().to_os_string().into_string().unwrap().to_lowercase().contains(&filter.to_lowercase()) {
-                    Some(ProcessInfo {
-                        pid: pid.as_u32(),
-                        name: process.name().to_os_string().into_string().unwrap(),
-                        cpu_usage: ((process.cpu_usage()*100.0).round())/100.0,
-                        memory_usage: (((process.memory().to_f64()/sys.total_memory().to_f64())*10000.0).round())/100.0,
-                    })
-                } else {
-                    None
-                }
-            )
-        .collect();
+
+    let processes = sys.processes();
+
+    let mut parent_processes: Vec<ProcessInfo> = Vec::<ProcessInfo>::new();
+
+    for (pid, process) in processes.iter() {
+        // Checking for PID 0
+        let pid = pid.as_u32();
+        if pid == 0 { continue; }
+
+        // Checking for name containg filter
+        let name = process.name().to_os_string().into_string().unwrap();
+        if !name.to_lowercase().contains(&filter.to_lowercase()) { continue; }
+
+        // Filtering out children with same name as parent
+        let name_match_index = parent_processes.iter().position(|p| p.name == name);
+        if name_match_index.is_none() {
+            parent_processes.push(ProcessInfo {
+                pid, name, 
+                cpu_usage: ((process.cpu_usage()*100.0).round())/100.0,
+                memory_usage: (((process.memory().to_f64()/sys.total_memory().to_f64())*10000.0).round())/100.0
+            });
+            continue;
+        }
+
+        let name_match_index = name_match_index.unwrap();
+        if process.parent().is_some() && process.parent().unwrap().as_u32() != parent_processes[name_match_index].pid {
+            parent_processes.remove(name_match_index);
+            parent_processes.push(ProcessInfo {
+                pid, name,
+                cpu_usage: ((process.cpu_usage()*100.0).round())/100.0,
+                memory_usage: (((process.memory().to_f64()/sys.total_memory().to_f64())*10000.0).round())/100.0
+            });
+        }
+    }
     
     // Sorting for either most cpu or memory usage
-    processes.sort_by(|a, b| 
+    parent_processes.sort_by(|a, b| 
         if sort == "CPU" {
             b.cpu_usage.partial_cmp(&a.cpu_usage).unwrap()
         } else {
@@ -39,7 +58,7 @@ pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<Proc
         }
     );
 
-    processes
+    parent_processes
 }
 
 pub fn kill_process(sys: &mut System, pid: u32) {
