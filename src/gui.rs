@@ -53,6 +53,7 @@ impl eframe::App for ProcessManagerApp {
                         self.last_refresh = Instant::now();
                         self.processes = process_util::get_processes(&mut self.sys, self.sort.clone(), self.filter.clone());
                     }
+
                     button = Button::new("Sort Memory").fill(
                         if self.sort == "RAM" { Color32::LIGHT_BLUE } else { Color32::LIGHT_GRAY }
                     );
@@ -61,17 +62,22 @@ impl eframe::App for ProcessManagerApp {
                         self.last_refresh = Instant::now();
                         self.processes = process_util::get_processes(&mut self.sys, self.sort.clone(), self.filter.clone());
                     }
+
                     button = Button::new("Live Refresh").fill(
                         if self.live_refresh { Color32::LIGHT_BLUE } else { Color32::LIGHT_GRAY }
                     );
                     if ui.add(button).clicked() {
                         self.live_refresh = if self.live_refresh {false} else {true}
                     }
-                    if ui.button("Refresh").clicked() {
+
+                    button = Button::new("Refresh").fill(Color32::LIGHT_GRAY);
+                    if ui.add(button).clicked() {
                         self.last_refresh = Instant::now();
                         self.processes = process_util::get_processes(&mut self.sys, self.sort.clone(), self.filter.clone());
                     }
-                    if ui.button("Kill").clicked() {
+
+                    button = Button::new("Kill").fill(Color32::LIGHT_GRAY);
+                    if ui.add(button).clicked() {
                         if self.selected_pid != None {
                             process_util::kill_process(&mut self.sys, self.selected_pid.unwrap())
                         }
@@ -130,10 +136,16 @@ fn set_font(ctx: &egui::Context) {
 }
 
 fn load_icon() -> egui::IconData {
-    let image = image::open(std::path::Path::new("./assets/icon-256x256.png"));
-    if !image.is_ok() { return egui::IconData::default() }
-    let rgba = image.unwrap().into_rgba8().into_raw();
-    egui::IconData { rgba, width: 256, height: 256 }
+    let icon_bytes = include_bytes!("../assets/icon-256x256.png");
+    let image = image::load_from_memory(icon_bytes);
+    if image.is_err() {
+        egui::IconData::default()
+    } else {
+        let rgba = image.unwrap().to_rgba8().to_vec();
+        egui::IconData {
+            rgba, width: 256, height: 256
+        }   
+    }
 }
 
 pub fn run() -> Result<(), eframe::Error> {
@@ -150,6 +162,7 @@ pub fn run() -> Result<(), eframe::Error> {
         native_options,
         Box::new(
             |cc| {
+                cc.egui_ctx.set_visuals(egui::Visuals::light());
                 set_font(&cc.egui_ctx);
 
                 let mut sys = System::new_all();

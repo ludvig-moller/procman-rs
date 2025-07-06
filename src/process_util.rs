@@ -22,7 +22,7 @@ pub fn get_processes(sys: &mut System, sort: String, filter: String) -> Vec<Proc
         let pid = pid.as_u32();
         if pid == 0 { continue; }
 
-        // Checking for name containg filter
+        // Checking for name containing filter
         let name = process.name().to_os_string().into_string().unwrap();
         if !name.to_lowercase().contains(&filter.to_lowercase()) { continue; }
 

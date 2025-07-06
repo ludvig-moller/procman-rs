@@ -1,4 +1,6 @@
 
+#![windows_subsystem = "windows"]
+
 mod gui;
 mod process_util;
 
