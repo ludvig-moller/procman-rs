@@ -28,7 +28,7 @@ impl eframe::App for ProcessManagerApp {
         // Actions
         egui::TopBottomPanel::top("top_panel")
             .show(ctx, |ui| {
-            let layout = if ui.available_width() >= 630.0 { 
+            let layout = if ui.available_width() >= 660.0 { 
                 egui::Layout::left_to_right(egui::Align::Center) 
             } else {
                 egui::Layout::top_down(egui::Align::Center) 
